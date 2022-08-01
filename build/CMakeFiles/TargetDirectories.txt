@@ -1,0 +1,3 @@
+/home/elena/code/pixelsig/build/CMakeFiles/code.dir
+/home/elena/code/pixelsig/build/CMakeFiles/edit_cache.dir
+/home/elena/code/pixelsig/build/CMakeFiles/rebuild_cache.dir

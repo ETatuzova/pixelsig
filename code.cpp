@@ -16,7 +16,7 @@ using namespace nil::crypto3::multiprecision;
 
 
 int main(int argc, char *argv[]) {
-    pixel_parent_scheme<pixel_basic_scheme<void*, void*, void*, void*>,void*> basic_sig_scheme;
+    pixel_parent_scheme<pixel_basic_scheme<fields::alt_bn128_fq<254>, fields::alt_bn128_fq<254>, void*, void*>,void*> basic_sig_scheme;
     pixel_parent_scheme<pixel_et_scheme<void*, void*, void*, void*>,void*> et_sig_scheme;
     void *msg = NULL;
 

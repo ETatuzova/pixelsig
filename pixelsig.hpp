@@ -17,22 +17,24 @@ namespace nil {
              * @see https://eprint.iacr.org/2019/514.pdf
              */
 
-            template<typename SignatureVersion, typename MsgType>
+            template<typename SignatureVersion, typename MsgType, typename SigType, typename hash_type>
             struct pixel_parent_scheme {
                 typedef SignatureVersion signature_version;
 
                 typedef typename SignatureVersion::private_key_type private_key_type;
                 typedef typename SignatureVersion::public_key_type public_key_type;
-                typedef typename SignatureVersion::signature_type signature_type;
+                typedef typename SignatureVersion::signature_type internal_signature_type;
+                typedef typename SignatureVersion::MsgType internal_msg_type;
 
                 static inline void setup(){}
                 static inline void generate_keys(){}
                 static inline void update_keys(){}
-                static inline signature_type sign( MsgType& msg, const private_key_type &privkey){
-                    return SignatureVersion::sign(msg, privkey);   
+                static inline SigType sign( MsgType& msg, const private_key_type &privkey){
+                    internal_msg_type hmsg = (internal_msg_type)hash<hash_type>(msg);
+                    return (SigType)(SignatureVersion::sign(hmsg, privkey));   
                 }
-                static inline bool verify( MsgType& msg, const public_key_type &pubkey, const signature_type &sig){
-                    return SignatureVersion::verify(msg, pubkey, sig);   
+                static inline bool verify( MsgType& msg, const public_key_type &pubkey, const SigType &sig){
+                    return SignatureVersion::verify(msg, pubkey, (internal_signature_type)sig);   
                 }
             };
 
@@ -43,17 +45,18 @@ namespace nil {
              * @tparam hash_type -- class of messages
              * @see https://eprint.iacr.org/2019/514.pdf     Section 4.1
              */
-            template<typename field1, typename field2, typename hash_type, typename MsgType>
+            template<typename field1, typename field2>
             struct pixel_basic_scheme {
                 typedef void* public_key_type;
                 typedef void* private_key_type;
-                typedef void* signature_type;
+                typedef std::string signature_type;
+                typedef std::string MsgType;
 
                 static inline void setup(){}
                 static inline void generate_keys(){}
                 static inline void update_keys(){}
                 static inline signature_type sign( MsgType& msg, const private_key_type &privkey){
-                    return NULL;   
+                    return msg + ": basic pixel signature";   
                 }
                 static inline bool verify( MsgType& msg, const public_key_type &pubkey, const signature_type &sig){
                     return true;   
@@ -71,17 +74,18 @@ namespace nil {
              * @tparam hash_type -- class of messages
              * @see https://eprint.iacr.org/2019/514.pdf     Section 4.1
              */
-            template<typename field1, typename field2, typename hash_type, typename MsgType>
+            template<typename field1, typename field2>
             struct pixel_et_scheme {
                 typedef void* public_key_type;
                 typedef void* private_key_type;
-                typedef void* signature_type;
+                typedef std::string signature_type;
+                typedef std::string MsgType;
 
                 static inline void setup(){}
                 static inline void generate_keys(){}
                 static inline void update_keys(){}
                 static inline signature_type sign( MsgType& msg, const private_key_type &privkey){
-                    return NULL;   
+                    return msg + ": encoding times pixel signature";   
                 }
                 static inline bool verify( MsgType& msg, const public_key_type &pubkey, const signature_type &sig){
                     return false;   

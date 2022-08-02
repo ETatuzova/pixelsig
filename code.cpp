@@ -1,4 +1,6 @@
 #include <nil/crypto3/hash/md5.hpp>
+#include <nil/crypto3/hash/sha1.hpp>
+#include <nil/crypto3/hash/sha.hpp>
 #include <nil/crypto3/hash/algorithm/hash.hpp>
 
 #include <vector>
@@ -14,16 +16,22 @@ using namespace nil::crypto3::pubkey;
 using namespace nil::crypto3::hashes;
 using namespace nil::crypto3::multiprecision;
 
+typedef std::string signature_type;
 
 int main(int argc, char *argv[]) {
-    pixel_parent_scheme<pixel_basic_scheme<fields::alt_bn128_fq<254>, fields::alt_bn128_fq<254>, void*, void*>,void*> basic_sig_scheme;
-    pixel_parent_scheme<pixel_et_scheme<void*, void*, void*, void*>,void*> et_sig_scheme;
-    void *msg = NULL;
+    pixel_parent_scheme<pixel_basic_scheme<fields::alt_bn128_fq<254>, fields::alt_bn128_fq<254>>, std::string, signature_type, hashes::sha> basic_sig_scheme;
+    pixel_parent_scheme<pixel_et_scheme<void*, void*>,std::string, signature_type, hashes::sha1> et_sig_scheme;
+    std::string input = "Tuesday was great";
 
-    std::cout << "My first verify=" << basic_sig_scheme.verify(msg, NULL, NULL) << std::endl;
-    std::cout << "My second verify=" << et_sig_scheme.verify(msg, NULL, NULL) << std::endl;
+    signature_type s = basic_sig_scheme.sign(input, NULL);
+    signature_type s2 = et_sig_scheme.sign(input, NULL);
 
-    std::string input = "Hello, Monday evening!";
+    std::cout << "My first signature= " << s << std::endl;
+    std::cout << "My second signature=" << s2 << std::endl;
+
+    std::cout << "My first verify= " << basic_sig_scheme.verify(input, NULL, "") << std::endl;
+    std::cout << "My second verify=" << et_sig_scheme.verify(input, NULL, "NULL") << std::endl;
+
     std::string out = hash<hashes::md5>(input.begin(), input.end());
     std::cout << out << std::endl;
 }

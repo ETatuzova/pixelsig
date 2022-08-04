@@ -26,7 +26,9 @@ namespace nil {
                 typedef typename SignatureVersion::signature_type internal_signature_type;
                 typedef typename SignatureVersion::MsgType internal_msg_type;
 
-                static inline void setup(){}
+                static inline void setup(){
+                    signature_version::setup();
+                }
                 static inline void generate_keys(){}
                 static inline void update_keys(){}
                 static inline SigType sign( MsgType& msg, const private_key_type &privkey){
@@ -40,19 +42,27 @@ namespace nil {
 
             /*!
              * @brief Basic Pixel Scheme
-             * @tparam field1_type -- type of prime order field G1 that we will use
-             * @tparam field2_type -- hash function we will use
-             * @tparam hash_type -- class of messages
+             * @tparam CurveType -- curve for bilinear group {G1,G2}->GT
+             * @tparam SchemeParams -- scheme params, static member
+             *          g1 -- G1 generator
+             *          g2 -- G2 generator
+             *          h  -- constant from G1
+             *          F1 -- constant F' from F1, F'^M will be computed
+             *          T  -- maximum signature rounds
+             *          G1_value_type F(t) -- function F(t, 0)
+             *          load() -- load function called once in setup() function
              * @see https://eprint.iacr.org/2019/514.pdf     Section 4.1
              */
-            template<typename field1, typename field2>
+            template<typename CurveType, typename SchemeParams>
             struct pixel_basic_scheme {
                 typedef void* public_key_type;
                 typedef void* private_key_type;
+                static  SchemeParams scheme_params;
+
                 typedef std::string signature_type;
                 typedef std::string MsgType;
 
-                static inline void setup(){}
+                static inline void setup(){                }
                 static inline void generate_keys(){}
                 static inline void update_keys(){}
                 static inline signature_type sign( MsgType& msg, const private_key_type &privkey){
@@ -74,7 +84,7 @@ namespace nil {
              * @tparam hash_type -- class of messages
              * @see https://eprint.iacr.org/2019/514.pdf     Section 4.1
              */
-            template<typename field1, typename field2>
+            template<typename CurveType>
             struct pixel_et_scheme {
                 typedef void* public_key_type;
                 typedef void* private_key_type;

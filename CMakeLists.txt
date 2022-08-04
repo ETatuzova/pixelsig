@@ -16,7 +16,7 @@ include_directories( /home/elena/code/crypto3/libs/block/include)
 include_directories( /home/elena/code/crypto3/libs/pubkey/include)
 include_directories( /home/elena/code/pixelsig)
 
-ADD_EXECUTABLE( code simple_bilinearity.cpp )
+ADD_EXECUTABLE( code code.cpp )
 
 link_directories(${Boost_LIBRARY_DIRS})
 TARGET_LINK_LIBRARIES( code ${Boost_LIBRARIES})

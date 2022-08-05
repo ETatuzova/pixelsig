@@ -28,22 +28,14 @@ struct pixel_basic_random_params{
     using g1_value_type = typename g1_type::value_type;
     using g2_value_type = typename g2_type::value_type;
 
-    using t_type = int;
-
-    static t_type         T;  // maximum signature rounds;
+    static int         T;  // maximum signature rounds;
     static g1_value_type g1;
     static g2_value_type g2; // generator of G2
     static g1_value_type h;  // constant h
     static g1_value_type F1; // constant F1
-    static inline void load(){
-        std::cout << "Load params" << std::endl;
-    };
-    g1_value_type F(int t){ //function F(t, 0)
-        return random_element<typename curve_type::template g1_type<>>();
-    };   
 };
 
-template<typename CurveType> typename pixel_basic_random_params<CurveType>::t_type pixel_basic_random_params<CurveType>::T = 8;
+template<typename CurveType> int pixel_basic_random_params<CurveType>::T = 8;
 template<typename CurveType> 
     typename pixel_basic_random_params<CurveType>::g1_value_type pixel_basic_random_params<CurveType>::g1 = random_element<typename CurveType::template g1_type<>>();
 template<typename CurveType> 

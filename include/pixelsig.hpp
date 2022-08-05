@@ -1,3 +1,14 @@
+#include <nil/crypto3/algebra/curves/bls12.hpp>
+#include <nil/crypto3/algebra/curves/mnt4.hpp>
+#include <nil/crypto3/algebra/curves/mnt6.hpp>
+#include <nil/crypto3/algebra/curves/edwards.hpp>
+#include <nil/crypto3/algebra/pairing/bls12.hpp>
+#include <nil/crypto3/algebra/pairing/mnt4.hpp>
+#include <nil/crypto3/algebra/pairing/mnt6.hpp>
+#include <nil/crypto3/algebra/pairing/edwards.hpp>
+
+#include <nil/crypto3/algebra/algorithms/pair.hpp>
+#include <nil/crypto3/algebra/random_element.hpp>
 
 #include <nil/crypto3/pubkey/algorithm/pubkey.hpp>
 #include <nil/crypto3/pubkey/algorithm/sign.hpp>
@@ -7,6 +18,8 @@
 #include <nil/crypto3/pubkey/algorithm/aggregate_verify_single_msg.hpp>
 
 #include <nil/crypto3/algebra/curves/bls12.hpp>
+
+using namespace nil::crypto3::algebra;
 
 namespace nil {
     namespace crypto3 {
@@ -40,6 +53,19 @@ namespace nil {
                 }
             };
 
+            template<typename CurveType, typename StaticParams>
+            struct pixel_basic_params{
+                using curve_type = CurveType;
+                using static_params = StaticParams;
+
+                using g1_type = typename curve_type::template g1_type<>;
+                using g1_value_type = typename g1_type::value_type;
+
+                static g1_value_type F(int t){ //function F(t, 0){
+                    return random_element<typename curve_type::template g1_type<>>();
+                }
+            };
+
             /*!
              * @brief Basic Pixel Scheme
              * @tparam CurveType -- curve for bilinear group {G1,G2}->GT
@@ -50,14 +76,13 @@ namespace nil {
              *          F1 -- constant F' from F1, F'^M will be computed
              *          T  -- maximum signature rounds
              *          G1_value_type F(t) -- function F(t, 0)
-             *          load() -- load function called once in setup() function
              * @see https://eprint.iacr.org/2019/514.pdf     Section 4.1
              */
-            template<typename CurveType, typename SchemeParams>
+            template<typename CurveType, template <class, class> typename SchemeParams, template <class> typename StaticParams>
             struct pixel_basic_scheme {
                 typedef void* public_key_type;
                 typedef void* private_key_type;
-                static  SchemeParams scheme_params;
+                static  SchemeParams<CurveType, StaticParams<CurveType>> scheme_params;
 
                 typedef std::string signature_type;
                 typedef std::string MsgType;

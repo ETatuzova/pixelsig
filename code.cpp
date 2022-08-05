@@ -35,20 +35,29 @@ typedef std::string signature_type;
 
 int main(int argc, char *argv[]) {
     pixel_parent_scheme<
-        pixel_basic_scheme<curves::bls12<381>, pixel_basic_random_params<curves::bls12<381>>>, 
+        pixel_basic_scheme<
+            curves::bls12<381>, 
+            pixel_basic_params,
+            pixel_basic_random_params
+        >, 
         std::string, signature_type, hashes::sha
     > basic_sig_scheme;
+
     pixel_parent_scheme<
-        pixel_basic_scheme<curves::mnt4<298>, pixel_basic_random_params<curves::mnt4<298>>>, 
+        pixel_basic_scheme<
+            curves::mnt4<298>, 
+            pixel_basic_params,
+            pixel_basic_random_params
+        >,
         std::string, signature_type, hashes::sha
     > basic_sig_scheme2;
+
+
+
     pixel_parent_scheme<pixel_et_scheme<curves::mnt4<298>>,std::string, signature_type, hashes::sha1> et_sig_scheme;
     std::string input = "Tuesday was great";
 
-//    load<params_type>();
     basic_sig_scheme.setup();
-
-//    typename curve_type::template g1_type<>::value_type g = random_element<typename curve_type::template g1_type<>>();
 
     auto s = basic_sig_scheme.sign(input, NULL);
     auto s2 = et_sig_scheme.sign(input, NULL);

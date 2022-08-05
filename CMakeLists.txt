@@ -14,7 +14,7 @@ include_directories( /home/elena/code/crypto3/libs/marshalling/multiprecision/in
 include_directories( /home/elena/code/crypto3/libs/hash/include)
 include_directories( /home/elena/code/crypto3/libs/block/include)
 include_directories( /home/elena/code/crypto3/libs/pubkey/include)
-include_directories( /home/elena/code/pixelsig)
+include_directories( /home/elena/code/pixelsig/include)
 
 ADD_EXECUTABLE( code code.cpp )
 

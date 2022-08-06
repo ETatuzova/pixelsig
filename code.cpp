@@ -24,6 +24,7 @@
 #include <pixelsig.hpp>
 #include <random_params.hpp>
 #include <default_params.hpp>
+#include <curve_point_encode.hpp>
 
 using namespace nil::crypto3;
 using namespace nil::crypto3::algebra;
@@ -34,70 +35,6 @@ using namespace nil::crypto3::algebra::pairing;
 
 typedef std::string signature_type;
 
-template<typename FieldParams>
-void print_field_element(std::ostream &os, const typename fields::detail::element_fp<FieldParams> &e) {
-    os << e.data;
-}
-
-template<typename FieldParams>
-void print_field_element(std::ostream &os, const typename fields::detail::element_fp2<FieldParams> &e) {
-    os << "[";
-    print_field_element(os, e.data[0]);
-    os << ", ";
-    print_field_element(os, e.data[1]);
-    os << "]";
-}
-
-template<typename FieldParams>
-void print_field_element(std::ostream &os, const typename fields::detail::element_fp3<FieldParams> &e) {
-    os << "[";
-    print_field_element(os, e.data[0]);
-    os << ", ";
-    print_field_element(os, e.data[1]);
-    os << ", ";
-    print_field_element(os, e.data[2]);
-    os << "]";
-}
-
-template<typename FieldParams>
-void print_field_element(std::ostream &os, const typename fields::detail::element_fp4<FieldParams> &e) {
-    os << "[";
-    print_field_element(os, e.data[0]);
-    os << ", ";
-    print_field_element(os, e.data[1]);
-    os << "]";
-}
-
-template<typename FieldParams>
-void print_field_element(std::ostream &os, const typename fields::detail::element_fp6_2over3<FieldParams> &e) {
-    os << "[";
-    print_field_element(os, e.data[0]);
-    os << ", ";
-    print_field_element(os, e.data[1]);
-    os << "]";
-}
-
-template<typename FieldParams>
-void print_field_element(std::ostream &os, const fields::detail::element_fp12_2over3over2<FieldParams> &e) {
-    os << "[[[" << e.data[0].data[0].data[0].data << "," << e.data[0].data[0].data[1].data << "],["
-       << e.data[0].data[1].data[0].data << "," << e.data[0].data[1].data[1].data << "],["
-       << e.data[0].data[2].data[0].data << "," << e.data[0].data[2].data[1].data << "]],"
-       << "[[" << e.data[1].data[0].data[0].data << "," << e.data[1].data[0].data[1].data << "],["
-       << e.data[1].data[1].data[0].data << "," << e.data[1].data[1].data[1].data << "],["
-       << e.data[1].data[2].data[0].data << "," << e.data[1].data[2].data[1].data << "]]]";
-}
-
-template<typename CurveGroupValue>
-void print_curve_group_element(std::ostream &os, const CurveGroupValue &e) {
-    os << "(";
-    print_field_element(os, e.X);
-    os << ",";
-    print_field_element(os, e.Y);
-    os << ",";
-    print_field_element(os, e.Z);
-    os << ")" << std::endl;
-}
-
 int main(int argc, char *argv[]) {
     pixel_parent_scheme<
         pixel_basic_scheme<
@@ -105,26 +42,28 @@ int main(int argc, char *argv[]) {
             pixel_basic_params,
             pixel_basic_default_params
         >, 
-        std::string, signature_type, hashes::sha
+        std::string, hashes::sha
     > basic_sig_scheme;
 
     pixel_parent_scheme<
         pixel_basic_scheme<
-            curves::mnt4<298>, 
+            curves::mnt6<298>, 
             pixel_basic_params,
-            pixel_basic_random_params
-        >,
-        std::string, signature_type, hashes::sha
+            pixel_basic_default_params
+        >, 
+        std::string, hashes::sha
     > basic_sig_scheme2;
 
-
-
-    pixel_parent_scheme<pixel_et_scheme<curves::mnt4<298>>,std::string, signature_type, hashes::sha1> et_sig_scheme;
+    pixel_parent_scheme<pixel_et_scheme<curves::mnt4<298>>,std::string, hashes::sha1> et_sig_scheme;
     std::string input = "Tuesday was great";
 
     pixel_basic_default_params<curves::bls12<381>>::curve_name="bls12";
     basic_sig_scheme.setup();
-    print_curve_group_element(std::cout, pixel_basic_default_params<curves::bls12<381>>::g1);
+    std::cout<< stringify_curve_group_element(pixel_basic_default_params<curves::bls12<381>>::g2)<<std::endl;
+
+    pixel_basic_default_params<curves::mnt6<298>>::curve_name="mnt6";
+    basic_sig_scheme2.setup();
+    std::cout<< stringify_curve_group_element(pixel_basic_default_params<curves::mnt6<298>>::g2)<<std::endl;
 
     auto s = basic_sig_scheme.sign(input, NULL);
     auto s2 = et_sig_scheme.sign(input, NULL);

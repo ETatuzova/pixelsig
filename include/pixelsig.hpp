@@ -30,7 +30,7 @@ namespace nil {
              * @see https://eprint.iacr.org/2019/514.pdf
              */
 
-            template<typename SignatureVersion, typename MsgType, typename SigType, typename hash_type>
+            template<typename SignatureVersion, typename MsgType, typename hash_type>
             struct pixel_parent_scheme {
                 typedef SignatureVersion signature_version;
 
@@ -39,6 +39,8 @@ namespace nil {
                 typedef typename SignatureVersion::signature_type internal_signature_type;
                 typedef typename SignatureVersion::MsgType internal_msg_type;
 
+                using SigType = std::string;
+
                 static inline void setup(){
                     signature_version::setup();
                 }
@@ -46,7 +48,7 @@ namespace nil {
                 static inline void update_keys(){}
                 static inline SigType sign( MsgType& msg, const private_key_type &privkey){
                     internal_msg_type hmsg = (internal_msg_type)hash<hash_type>(msg);
-                    return (SigType)(SignatureVersion::sign(hmsg, privkey));   
+                    return (std::string)(SignatureVersion::sign(hmsg, privkey));   
                 }
                 static inline bool verify( MsgType& msg, const public_key_type &pubkey, const SigType &sig){
                     return SignatureVersion::verify(msg, pubkey, (internal_signature_type)sig);   
@@ -70,6 +72,16 @@ namespace nil {
                 }
             };
 
+/*            template<typename CurveType>
+            struct pixel_signature_type{
+                using curve_type = Curve_type;
+                using data_type =  curve_type::gt_type::value_type;
+
+                data_type d;
+                std::string operator std::string(){}
+                pixel_signature_type(std::string str){this->d = str;}
+            }*/
+
             /*!
              * @brief Basic Pixel Scheme
              * @tparam CurveType -- curve for bilinear group {G1,G2}->GT
@@ -87,6 +99,9 @@ namespace nil {
                 typedef void* public_key_type;
                 typedef void* private_key_type;
                 using scheme_params = SchemeParams<CurveType, StaticParams<CurveType>>;
+                using static_params = StaticParams<CurveType>;
+                using curve_type = CurveType;
+//                using signature_type = typename curve_type::gt_type::value_type;
 
                 typedef std::string signature_type;
                 typedef std::string MsgType;

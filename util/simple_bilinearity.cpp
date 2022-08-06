@@ -110,25 +110,27 @@ void bilinear_example() {
     using gt_type = typename curve_type::gt_type;
     using fr_type = typename curve_type::scalar_field_type;
 
-    using g1_field_value_type = typename g1_type::field_type::value_type;
-    using g2_field_value_type = typename g2_type::field_type::value_type;
+    using g1_value_type = typename g1_type::value_type;
+    using g2_value_type = typename g2_type::value_type;
+    using gt_value_type =  typename gt_type::value_type;
+    using fr_value_type = typename fr_type::value_type;
 
-    auto g1 = random_element<typename curve_type::template g1_type<>>();
+    g1_value_type g1 = random_element<g1_type>();
 //    std::cout << "G1 random element: ";
 //    print_curve_group_element(g1);
 
-    auto g2 = random_element<typename curve_type::template g2_type<>>();
+    g2_value_type g2 = random_element<g2_type>();
 //    std::cout << "G2 random element: ";
 //    print_curve_group_element(g2);
 
-    auto a = random_element<typename curve_type::scalar_field_type>();
+    fr_value_type a = random_element<fr_type>();
 //    std::cout << "Fr random element: ";
 //    print_field_element(a);
 
 
-    auto var1 = pair_reduced<curve_type>(a * g1, g2);
-    auto var2 = pair_reduced<curve_type>(g1, a*g2);
-    auto var3 = pair_reduced<curve_type>(g1, g2).pow(cpp_int(a.data));
+    gt_value_type var1 = pair_reduced<curve_type>(a * g1, g2);
+    gt_value_type var2 = pair_reduced<curve_type>(g1, a*g2);
+    gt_value_type var3 = pair_reduced<curve_type>(g1, g2).pow(cpp_int(a.data));
     std::cout << "e(g1^a,g2), e(g1, g2^a), e(g1,g2)^a" << std::endl;
     print_field_element(var1);
     print_field_element(var2);

@@ -113,9 +113,6 @@ int main(int argc, char *argv[]) {
 
     tree.put_child("basic", basic);
 
-    std::ofstream dst_file;
-    dst_file.open (dst_path);
-    boost::property_tree::write_json(dst_file, tree);
-    dst_file.close ();
+    boost::property_tree::write_json(std::cout, tree);
     return 0;
 }

@@ -18,6 +18,8 @@
 #include <nil/crypto3/pubkey/algorithm/aggregate_verify_single_msg.hpp>
 
 #include <nil/crypto3/algebra/curves/bls12.hpp>
+#include <curve_point_print.hpp>
+#include <curve_point_encode.hpp>
 
 using namespace nil::crypto3::algebra;
 
@@ -55,6 +57,25 @@ namespace nil {
                 }
             };
 
+            template<typename CurveType> 
+            struct pixel_signature_type{
+                using curve_type = CurveType;
+                using gt_type = typename curve_type::gt_type;
+                using gt_value_type = typename curve_type::gt_type::value_type;
+
+                gt_value_type val;
+
+                pixel_signature_type<curve_type>(gt_value_type sign){
+                    this->val = sign;
+                }
+                operator std::string(){
+                    std::cout<< "Signature_value::" << std::endl;
+                    print_field_element(this->val);
+                    std::cout<<stringify_field_element(this->val)<<std::endl;
+                    return "stringify_curve_group_element<gt_value_type>(this->val)";
+                }
+            };
+
             template<typename CurveType, typename StaticParams>
             struct pixel_basic_params{
                 using curve_type = CurveType;
@@ -72,16 +93,6 @@ namespace nil {
                 }
             };
 
-/*            template<typename CurveType>
-            struct pixel_signature_type{
-                using curve_type = Curve_type;
-                using data_type =  curve_type::gt_type::value_type;
-
-                data_type d;
-                std::string operator std::string(){}
-                pixel_signature_type(std::string str){this->d = str;}
-            }*/
-
             /*!
              * @brief Basic Pixel Scheme
              * @tparam CurveType -- curve for bilinear group {G1,G2}->GT
@@ -94,23 +105,29 @@ namespace nil {
              *          G1_value_type F(t) -- function F(t, 0)
              * @see https://eprint.iacr.org/2019/514.pdf     Section 4.1
              */
-            template<typename CurveType, template <class, class> typename SchemeParams, template <class> typename StaticParams>
+            template<
+                typename CurveType, 
+                template <class, class> typename SchemeParams, 
+                template <class> typename StaticParams,
+                template <class> typename SignatureType
+            >
             struct pixel_basic_scheme {
                 typedef void* public_key_type;
                 typedef void* private_key_type;
                 using scheme_params = SchemeParams<CurveType, StaticParams<CurveType>>;
                 using static_params = StaticParams<CurveType>;
                 using curve_type = CurveType;
-//                using signature_type = typename curve_type::gt_type::value_type;
+                using signature_type = SignatureType<CurveType>;
 
-                typedef std::string signature_type;
                 typedef std::string MsgType;
 
                 static inline void setup(){ scheme_params::load(); }
                 static inline void generate_keys(){}
                 static inline void update_keys(){}
                 static inline signature_type sign( MsgType& msg, const private_key_type &privkey){
-                    return msg + ": basic pixel signature";   
+                    typename curve_type::gt_type::value_type gt = pair_reduced<curve_type>(static_params::g1, static_params::g2);
+                    print_field_element(gt);
+                    return signature_type(gt);   
                 }
                 static inline bool verify( MsgType& msg, const public_key_type &pubkey, const signature_type &sig){
                     return true;   

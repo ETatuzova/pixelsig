@@ -36,16 +36,22 @@ boost::property_tree::ptree paramsToTree(){
     return tree;
 }
 
+template <typename params>
+std::string stringify_params(){
+    std::stringstream ss;
+    ss  << "{\"g1\":" << stringify_curve_group_element(params::g1)
+        << ",\"g2\":" << stringify_curve_group_element(params::g2)
+        << ",\"h\":"  << stringify_curve_group_element(params::h)
+        << ",\"F1\":" << stringify_curve_group_element(params::F1) << "}";
+    return ss.str();
+}
+
 int main(int argc, char *argv[]) {
-    boost::property_tree::ptree tree;
-    boost::property_tree::ptree basic;
-
-    basic.put_child("bls12", paramsToTree<bls12params>());
-//    basic.put_child("mnt4", paramsToTree<mnt4params>());
-//    basic.put_child("mnt6", paramsToTree<mnt6params>());
-
-    tree.put_child("basic", basic);
-
-    boost::property_tree::write_json(std::cout, tree);
+    std::stringstream ss;
+    ss  << "{\"basic\":"
+        << "{\"bls12\":" << stringify_params<bls12params>()
+        << ",\"mnt4\":" << stringify_params<mnt4params>()
+        << ",\"mnt6\":" << stringify_params<mnt6params>()<< "}}";
+    std::cout << ss.str() << std::endl;
     return 0;
 }

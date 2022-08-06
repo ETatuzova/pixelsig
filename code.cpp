@@ -24,7 +24,6 @@
 #include <pixelsig.hpp>
 #include <random_params.hpp>
 #include <default_params.hpp>
-#include <curve_point_encode.hpp>
 
 using namespace nil::crypto3;
 using namespace nil::crypto3::algebra;
@@ -40,40 +39,43 @@ int main(int argc, char *argv[]) {
         pixel_basic_scheme<
             curves::bls12<381>, 
             pixel_basic_params,
-            pixel_basic_default_params
+            pixel_basic_default_params,
+            pixel_signature_type
         >, 
         std::string, hashes::sha
     > basic_sig_scheme;
 
-    pixel_parent_scheme<
+/*    pixel_parent_scheme<
         pixel_basic_scheme<
             curves::mnt6<298>, 
             pixel_basic_params,
-            pixel_basic_default_params
+            pixel_basic_default_params,
+            pixel_signature_type
         >, 
         std::string, hashes::sha
-    > basic_sig_scheme2;
+    > basic_sig_scheme2;*/
 
-    pixel_parent_scheme<pixel_et_scheme<curves::mnt4<298>>,std::string, hashes::sha1> et_sig_scheme;
+//    pixel_parent_scheme<pixel_et_scheme<curves::mnt4<298>>,std::string, hashes::sha1> et_sig_scheme;
+
     std::string input = "Tuesday was great";
 
     pixel_basic_default_params<curves::bls12<381>>::curve_name="bls12";
     basic_sig_scheme.setup();
     std::cout<< stringify_curve_group_element(pixel_basic_default_params<curves::bls12<381>>::g2)<<std::endl;
 
-    pixel_basic_default_params<curves::mnt6<298>>::curve_name="mnt6";
+/*    pixel_basic_default_params<curves::mnt6<298>>::curve_name="mnt6";
     basic_sig_scheme2.setup();
-    std::cout<< stringify_curve_group_element(pixel_basic_default_params<curves::mnt6<298>>::g2)<<std::endl;
+    std::cout<< stringify_curve_group_element(pixel_basic_default_params<curves::mnt6<298>>::g2)<<std::endl;*/
 
     auto s = basic_sig_scheme.sign(input, NULL);
-    auto s2 = et_sig_scheme.sign(input, NULL);
+//    auto s2 = et_sig_scheme.sign(input, NULL);
 
-    std::cout << "My first signature= " << s << std::endl;
-    std::cout << "My second signature=" << s2 << std::endl;
+//    std::cout << "My first signature= " << s << std::endl;
+//    std::cout << "My second signature=" << s2 << std::endl;
 
-    std::cout << "My first verify= " << basic_sig_scheme.verify(input, NULL, "") << std::endl;
-    std::cout << "My second verify=" << et_sig_scheme.verify(input, NULL, "NULL") << std::endl;
+/*    std::cout << "My first verify= " << basic_sig_scheme.verify(input, NULL, "") << std::endl;
+    std::cout << "My second verify=" << et_sig_scheme.verify(input, NULL, "NULL") << std::endl;*/
 
-    std::string out = hash<hashes::md5>(input.begin(), input.end());
-    std::cout << out << std::endl;
+//    std::string out = hash<hashes::md5>(input.begin(), input.end());
+//    std::cout << out << std::endl;
 }

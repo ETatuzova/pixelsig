@@ -34,6 +34,70 @@ using namespace nil::crypto3::algebra::pairing;
 
 typedef std::string signature_type;
 
+template<typename FieldParams>
+void print_field_element(std::ostream &os, const typename fields::detail::element_fp<FieldParams> &e) {
+    os << e.data;
+}
+
+template<typename FieldParams>
+void print_field_element(std::ostream &os, const typename fields::detail::element_fp2<FieldParams> &e) {
+    os << "[";
+    print_field_element(os, e.data[0]);
+    os << ", ";
+    print_field_element(os, e.data[1]);
+    os << "]";
+}
+
+template<typename FieldParams>
+void print_field_element(std::ostream &os, const typename fields::detail::element_fp3<FieldParams> &e) {
+    os << "[";
+    print_field_element(os, e.data[0]);
+    os << ", ";
+    print_field_element(os, e.data[1]);
+    os << ", ";
+    print_field_element(os, e.data[2]);
+    os << "]";
+}
+
+template<typename FieldParams>
+void print_field_element(std::ostream &os, const typename fields::detail::element_fp4<FieldParams> &e) {
+    os << "[";
+    print_field_element(os, e.data[0]);
+    os << ", ";
+    print_field_element(os, e.data[1]);
+    os << "]";
+}
+
+template<typename FieldParams>
+void print_field_element(std::ostream &os, const typename fields::detail::element_fp6_2over3<FieldParams> &e) {
+    os << "[";
+    print_field_element(os, e.data[0]);
+    os << ", ";
+    print_field_element(os, e.data[1]);
+    os << "]";
+}
+
+template<typename FieldParams>
+void print_field_element(std::ostream &os, const fields::detail::element_fp12_2over3over2<FieldParams> &e) {
+    os << "[[[" << e.data[0].data[0].data[0].data << "," << e.data[0].data[0].data[1].data << "],["
+       << e.data[0].data[1].data[0].data << "," << e.data[0].data[1].data[1].data << "],["
+       << e.data[0].data[2].data[0].data << "," << e.data[0].data[2].data[1].data << "]],"
+       << "[[" << e.data[1].data[0].data[0].data << "," << e.data[1].data[0].data[1].data << "],["
+       << e.data[1].data[1].data[0].data << "," << e.data[1].data[1].data[1].data << "],["
+       << e.data[1].data[2].data[0].data << "," << e.data[1].data[2].data[1].data << "]]]";
+}
+
+template<typename CurveGroupValue>
+void print_curve_group_element(std::ostream &os, const CurveGroupValue &e) {
+    os << "(";
+    print_field_element(os, e.X);
+    os << ",";
+    print_field_element(os, e.Y);
+    os << ",";
+    print_field_element(os, e.Z);
+    os << ")" << std::endl;
+}
+
 int main(int argc, char *argv[]) {
     pixel_parent_scheme<
         pixel_basic_scheme<
@@ -60,6 +124,7 @@ int main(int argc, char *argv[]) {
 
     pixel_basic_default_params<curves::bls12<381>>::curve_name="bls12";
     basic_sig_scheme.setup();
+    print_curve_group_element(std::cout, pixel_basic_default_params<curves::bls12<381>>::g1);
 
     auto s = basic_sig_scheme.sign(input, NULL);
     auto s2 = et_sig_scheme.sign(input, NULL);

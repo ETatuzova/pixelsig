@@ -23,6 +23,7 @@
 
 #include <pixelsig.hpp>
 #include <random_params.hpp>
+#include <default_params.hpp>
 
 using namespace nil::crypto3;
 using namespace nil::crypto3::algebra;
@@ -38,7 +39,7 @@ int main(int argc, char *argv[]) {
         pixel_basic_scheme<
             curves::bls12<381>, 
             pixel_basic_params,
-            pixel_basic_random_params
+            pixel_basic_default_params
         >, 
         std::string, signature_type, hashes::sha
     > basic_sig_scheme;
@@ -57,6 +58,7 @@ int main(int argc, char *argv[]) {
     pixel_parent_scheme<pixel_et_scheme<curves::mnt4<298>>,std::string, signature_type, hashes::sha1> et_sig_scheme;
     std::string input = "Tuesday was great";
 
+    pixel_basic_default_params<curves::bls12<381>>::curve_name="bls12";
     basic_sig_scheme.setup();
 
     auto s = basic_sig_scheme.sign(input, NULL);

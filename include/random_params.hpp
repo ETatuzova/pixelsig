@@ -33,6 +33,8 @@ struct pixel_basic_random_params{
     static g2_value_type g2; // generator of G2
     static g1_value_type h;  // constant h
     static g1_value_type F1; // constant F1
+
+    static void load(){};
 };
 
 template<typename CurveType> int pixel_basic_random_params<CurveType>::T = 8;

@@ -61,6 +61,10 @@ namespace nil {
                 using g1_type = typename curve_type::template g1_type<>;
                 using g1_value_type = typename g1_type::value_type;
 
+                static void load(){
+                    static_params::load();
+                }
+
                 static g1_value_type F(int t){ //function F(t, 0){
                     return random_element<typename curve_type::template g1_type<>>();
                 }
@@ -82,12 +86,12 @@ namespace nil {
             struct pixel_basic_scheme {
                 typedef void* public_key_type;
                 typedef void* private_key_type;
-                static  SchemeParams<CurveType, StaticParams<CurveType>> scheme_params;
+                using scheme_params = SchemeParams<CurveType, StaticParams<CurveType>>;
 
                 typedef std::string signature_type;
                 typedef std::string MsgType;
 
-                static inline void setup(){                }
+                static inline void setup(){ scheme_params::load(); }
                 static inline void generate_keys(){}
                 static inline void update_keys(){}
                 static inline signature_type sign( MsgType& msg, const private_key_type &privkey){

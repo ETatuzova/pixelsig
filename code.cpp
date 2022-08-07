@@ -21,9 +21,9 @@
 #include <utility>
 #include <random>
 
-#include <pixelsig.hpp>
-//#include <random_params.hpp>
+#include <pixel_signature_scheme.hpp>
 #include <default_params.hpp>
+//#include <random_params.hpp>
 
 using namespace nil::crypto3;
 using namespace nil::crypto3::algebra;
@@ -53,43 +53,49 @@ int main(int argc, char *argv[]) {
     BasicBlsScheme::keypair_type keypair = BasicBlsScheme::generate_keys();
     std::string input = "It is Sunday";
 
-    BasicBlsScheme::sign(input, keypair.sk);
+    std::string wrong = BasicBlsScheme::sign(input, keypair.sk);
 //    BasicBlsScheme::sign(input, keypair.sk); // This should call assertion;
     keypair.sk = BasicBlsScheme::update_keys(keypair.sk);
-    std::string s = BasicBlsScheme::sign(input, keypair.sk);
-    std::cout << s << std::endl;
+    std::string right = BasicBlsScheme::sign(input, keypair.sk);
 
-    BasicBlsScheme::verify(input, keypair.pk, 2, s);
+    if( BasicBlsScheme::verify(input, keypair.pk, 2, right) ){
+        std::cout << "Signature is right" << std::endl;
+    } else {
+        std::cout << "Signature is wrong" << std::endl;
+    };
 
-/*    pixel_parent_scheme<
-        pixel_basic_scheme<
-            curves::mnt6<298>, 
-            pixel_basic_params,
-            pixel_basic_default_params,
-            pixel_signature_type
-        >, 
-        std::string, hashes::sha
-    > basic_sig_scheme2;
+    if( BasicBlsScheme::verify(input, keypair.pk, 2, wrong) ){
+        std::cout << "Signature is right" << std::endl;
+    } else {
+        std::cout << "Signature is wrong" << std::endl;
+    };
+    
+    auto kp1 = BasicBlsScheme::generate_keys();
+    auto kp2 = BasicBlsScheme::generate_keys();
+    auto kp3 = BasicBlsScheme::generate_keys();
 
-//    pixel_parent_scheme<pixel_et_scheme<curves::mnt4<298>>,std::string, hashes::sha1> et_sig_scheme;
+    std::string mmsg = "Light in the end of tonnel";
 
-    std::string input = "Tuesday was great";*/
+    std::vector<BasicBlsScheme::public_key_type> pks = {kp1.pk, kp2.pk, kp3.pk};
+    auto apk = BasicBlsScheme::aggregate_public_keys(pks);
 
-//    pixel_basic_default_params<curves::bls12<381>>::curve_name="bls12";
-//    basic_sig_scheme.setup();
+    std::vector<BasicBlsScheme::signature_type> signs = {
+        BasicBlsScheme::sign(mmsg, kp1.sk),
+        BasicBlsScheme::sign(mmsg, kp2.sk),
+        BasicBlsScheme::sign(mmsg, kp3.sk),
+    };
+    auto Sigma = BasicBlsScheme::aggregate_signatures(signs);
 
-/*    pixel_basic_default_params<curves::mnt6<298>>::curve_name="mnt6";
-    basic_sig_scheme2.setup();
+    if( BasicBlsScheme::verify(mmsg, apk, 1, Sigma) ){
+        std::cout << "Multi-signature is right" << std::endl;
+    } else {
+        std::cout << "Multi-signature is wrong" << std::endl;
+    };
 
-//    auto s = basic_sig_scheme.sign(input, NULL);
-//    auto s2 = et_sig_scheme.sign(input, NULL);
-
-//    std::cout << "My first signature= " << s << std::endl;
-//    std::cout << "My second signature=" << s2 << std::endl;
-
-/*    std::cout << "My first verify= " << basic_sig_scheme.verify(input, NULL, "") << std::endl;
-    std::cout << "My second verify=" << et_sig_scheme.verify(input, NULL, "NULL") << std::endl;*/
-
-//    std::string out = hash<hashes::md5>(input.begin(), input.end());
-//    std::cout << out << std::endl;
+    if( BasicBlsScheme::verify(mmsg, kp1.pk, 1, Sigma) ){
+        std::cout << "Multi-signature is right" << std::endl;
+    } else {
+        std::cout << "Multi-signature is wrong" << std::endl;
+    };
+    return 0;
 }

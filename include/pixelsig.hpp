@@ -22,6 +22,8 @@
 #include <nil/crypto3/algebra/curves/bls12.hpp>
 #include <curve_point_print.hpp>
 #include <curve_point_encode.hpp>
+#include <base_converter.h>
+#include <boost/algorithm/string.hpp>
 
 using namespace nil::crypto3::algebra;
 
@@ -247,6 +249,19 @@ namespace nil {
                     assert(!privkey->used());
                     privkey->use();
 
+//                    fr_value_type M = field_element_init(msg);
+                    BaseConverter conv = BaseConverter::HexToDecimalConverter();
+
+                    std::cout << "Msg hash=" << msg << std::endl;
+                    boost::to_upper(msg);
+                    std::cout << "Msg hash=" << msg << std::endl;
+                    std::string dec = conv.Convert(msg);
+                    std::cout << "Msg decimal hash=" << dec << std::endl;
+                    fr_value_type M = typename fr_value_type::integral_type(dec);
+
+                    print_field_element(M);
+                    std::cout << std::endl;
+
                     return signature_type(static_params::g1, static_params::g2);   
                 }
                 static inline bool verify( MsgType& msg, const public_key_type &pubkey, const signature_type &sig){
@@ -276,6 +291,7 @@ namespace nil {
                 static inline void generate_keys(){}
                 static inline void update_keys(){}
                 static inline signature_type sign( MsgType& msg, const private_key_type &privkey){
+
                     return msg + ": encoding times pixel signature";   
                 }
                 static inline bool verify( MsgType& msg, const public_key_type &pubkey, int t, const signature_type &sig){

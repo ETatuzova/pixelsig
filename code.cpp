@@ -41,7 +41,7 @@ typedef pixel_parent_scheme<
         pixel_signature_type,
         pixel_keypair_type
     >, 
-    std::string, hashes::sha
+    std::string, hashes::md5
 > BasicBlsScheme;
 
 int main(int argc, char *argv[]) {

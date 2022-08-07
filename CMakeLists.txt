@@ -16,7 +16,7 @@ include_directories( /home/elena/code/crypto3/libs/block/include)
 include_directories( /home/elena/code/crypto3/libs/pubkey/include)
 include_directories( /home/elena/code/pixelsig/include)
 
-ADD_EXECUTABLE( code code.cpp )
+ADD_EXECUTABLE( code code.cpp util/base_converter.cpp)
 ADD_EXECUTABLE( bilinearity util/simple_bilinearity.cpp )
 ADD_EXECUTABLE( genparams util/generate_params.cpp )
 

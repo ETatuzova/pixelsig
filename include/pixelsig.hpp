@@ -113,9 +113,8 @@ namespace nil {
                 using fr_type = typename curve_type::scalar_field_type;
                 using fr_value_type = typename fr_type::value_type;
 
-                fr_value_type x;        //core of secret key
-
                 // parts of private key
+                g1_value_type hx;       // h^x --computed once
                 g1_value_type hxft0r;   // (h^x)*F(t, 0)^r
                 g1_value_type F1r;      // F'^r
                 g2_value_type g2r;      // g2^r
@@ -211,13 +210,14 @@ namespace nil {
                 static inline void setup(){ scheme_params::load(); }
                 static inline keypair_type generate_keys(){
                     fr_value_type r =    random_element<fr_type>(); // fresh randomness
+                    fr_value_type x =    random_element<fr_type>(); // true secret key
 
                     keypair_type    pair;
 
                     pair.sk =           new private_key_type();
-                    pair.sk->x =        random_element<fr_type>();
+                    pair.sk->hx =       x * static_params::h;
                     pair.sk->t =        1;
-                    pair.sk->hxft0r =   (pair.sk->x * static_params::h) + (r * scheme_params::F(pair.sk->t));   // (h^x)*F(t, 0)^r
+                    pair.sk->hxft0r =   pair.sk->hx + (r * scheme_params::F(pair.sk->t));   // (h^x)*F(t, 0)^r
                     pair.sk->F1r =      r * static_params::F1;      // F'^r
                     pair.sk->g2r =      r*static_params::g2;      // g2^r
 
@@ -235,19 +235,19 @@ namespace nil {
                     private_key_type *sk = new private_key_type;
                     fr_value_type r =    random_element<fr_type>(); // fresh randomness
 
-                    sk->x = old_sk->x;
+                    sk->hx = old_sk->hx;
                     sk->t = old_sk->t + 1;
-                    sk->hxft0r =   (sk->x * static_params::h) + (r * scheme_params::F(sk->t));   // (h^x)*F(t, 0)^r
+                    sk->hxFt0r =   sk->hx + (r * scheme_params::F(sk->t));   // (h^x)*F(t, 0)^r
                     sk->F1r =      r * static_params::F1;      // F'^r
                     sk->g2r =      r*static_params::g2;      // g2^r
                     
                     return sk;
                 }
 
-                static inline signature_type sign( MsgType& msg, private_key_type *privkey){
+                static inline signature_type sign( MsgType& msg, private_key_type *sk){
                     //We can use private key only once
-                    assert(!privkey->used());
-                    privkey->use();
+                    assert(!sk->used());
+                    sk->use();
 
 //                    fr_value_type M = field_element_init(msg);
                     BaseConverter conv = BaseConverter::HexToDecimalConverter();
@@ -261,9 +261,10 @@ namespace nil {
 
                     print_field_element(M);
                     std::cout << std::endl;
-
-                    return signature_type(static_params::g1, static_params::g2);   
+                    
+                    return signature_type(sk->hxFt0r + M * sk->F1r, static_params::g2r);   
                 }
+
                 static inline bool verify( MsgType& msg, const public_key_type &pubkey, const signature_type &sig){
                     return true;   
                 }

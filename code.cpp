@@ -39,9 +39,12 @@ typedef pixel_parent_scheme<
         pixel_basic_params,
         pixel_basic_default_params,
         pixel_signature_type,
-        pixel_keypair_type
+        pixel_keypair_type,
+        pixel_msg_type,
+        hashes::md5
     >, 
-    std::string, hashes::md5
+    std::string,
+    std::string
 > BasicBlsScheme;
 
 int main(int argc, char *argv[]) {
@@ -53,7 +56,10 @@ int main(int argc, char *argv[]) {
     BasicBlsScheme::sign(input, keypair.sk);
 //    BasicBlsScheme::sign(input, keypair.sk); // This should call assertion;
     keypair.sk = BasicBlsScheme::update_keys(keypair.sk);
-    BasicBlsScheme::sign(input, keypair.sk);
+    std::string s = BasicBlsScheme::sign(input, keypair.sk);
+    std::cout << s << std::endl;
+
+    BasicBlsScheme::verify(input, keypair.pk, 2, s);
 
 /*    pixel_parent_scheme<
         pixel_basic_scheme<
@@ -74,7 +80,6 @@ int main(int argc, char *argv[]) {
 
 /*    pixel_basic_default_params<curves::mnt6<298>>::curve_name="mnt6";
     basic_sig_scheme2.setup();
-    std::cout<< stringify_curve_group_element(pixel_basic_default_params<curves::mnt6<298>>::g2)<<std::endl;*/
 
 //    auto s = basic_sig_scheme.sign(input, NULL);
 //    auto s2 = et_sig_scheme.sign(input, NULL);

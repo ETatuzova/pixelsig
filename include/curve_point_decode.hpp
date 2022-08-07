@@ -1,3 +1,6 @@
+#ifndef CURVE_POINT_DECODE
+#define CURVE_POINT_DECODE
+
 template<typename ElementType>
 struct field_element_init;
 
@@ -121,3 +124,5 @@ CurveGroupValue curve_point_init(const PointData &point_data) {
     }
     return group_value_type(coordinates[0], coordinates[1], coordinates[2]);
 }
+
+#endif

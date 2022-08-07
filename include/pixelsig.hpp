@@ -19,11 +19,12 @@
 #include <nil/crypto3/pubkey/keys/private_key.hpp>
 #include <nil/crypto3/pubkey/keys/public_key.hpp>
 
-#include <nil/crypto3/algebra/curves/bls12.hpp>
 #include <curve_point_print.hpp>
+#include <curve_point_decode.hpp>
 #include <curve_point_encode.hpp>
 #include <base_converter.h>
 #include <boost/algorithm/string.hpp>
+#include <pixel_signature_type.hpp>
 
 using namespace nil::crypto3::algebra;
 
@@ -36,7 +37,7 @@ namespace nil {
              * @see https://eprint.iacr.org/2019/514.pdf
              */
 
-            template<typename SignatureVersion, typename MsgType, typename hash_type>
+            template<typename SignatureVersion, typename MsgType, typename SignatureType>
             struct pixel_parent_scheme {
                 typedef SignatureVersion signature_version;
 
@@ -44,7 +45,7 @@ namespace nil {
                 typedef typename SignatureVersion::public_key_type  public_key_type;
                 typedef typename SignatureVersion::keypair_type     keypair_type;
                 typedef typename SignatureVersion::signature_type   internal_signature_type;
-                typedef typename SignatureVersion::MsgType          internal_msg_type;
+                typedef typename SignatureVersion::msg_type         internal_msg_type;
 
                 using SigType = std::string;
 
@@ -60,35 +61,13 @@ namespace nil {
                     return signature_version::update_keys(key);
                 }
                 static inline SigType sign( MsgType& msg, private_key_type *privkey){
-                    internal_msg_type hmsg = (internal_msg_type)hash<hash_type>(msg);
-                    return (std::string)(SignatureVersion::sign(hmsg, privkey));   
+                    internal_msg_type m(msg);
+                    return (std::string)(SignatureVersion::sign(m, privkey));   
                 }
                 static inline bool verify( MsgType& msg, const public_key_type &pubkey, int t, const SigType &sig){
-                    return SignatureVersion::verify(msg, pubkey, t, (internal_signature_type)sig);   
-                }
-            };
-
-            template<typename CurveType> 
-            struct pixel_signature_type{
-                using curve_type = CurveType;
-                using g1_type = typename curve_type::template g1_type<>;
-                using g2_type = typename curve_type::template g2_type<>;
-
-                using g1_value_type = typename g1_type::value_type;
-                using g2_value_type = typename g2_type::value_type;
-
-                g1_value_type sigma1;
-                g2_value_type sigma2;
-
-                pixel_signature_type<curve_type>(g1_value_type sigma1, g2_value_type sigma2){
-                    this->sigma1 = sigma1;
-                    this->sigma2 = sigma2;
-                }
-                operator std::string(){
-                    std::string  str1=stringify_curve_group_element(this->sigma1);
-                    std::string  str2=stringify_curve_group_element(this->sigma2);
-                    std::string  result = "[" + str1 + "," + str2 + "]";
-                    return result;
+                    internal_msg_type m(msg);
+                    internal_signature_type s(sig);
+                    return SignatureVersion::verify(m, pubkey, t, s);   
                 }
             };
 
@@ -115,7 +94,7 @@ namespace nil {
 
                 // parts of private key
                 g1_value_type hx;       // h^x --computed once
-                g1_value_type hxft0r;   // (h^x)*F(t, 0)^r
+                g1_value_type hxFt0r;   // (h^x)*F(t, 0)^r
                 g1_value_type F1r;      // F'^r
                 g2_value_type g2r;      // g2^r
                 int   t;
@@ -126,16 +105,44 @@ namespace nil {
                     bool u = false;
             };
 
+            template<typename CurveType, typename HashType>
+            struct pixel_msg_type{
+                using curve_type =      CurveType;
+                using fr_type =         typename curve_type::scalar_field_type;
+                using fr_value_type =   typename fr_type::value_type;
+
+                fr_value_type           M;
+
+                pixel_msg_type<CurveType, HashType>(std::string msg){
+                    std::string h = hash<HashType>(msg);
+
+                    BaseConverter conv = BaseConverter::HexToDecimalConverter();
+
+                    std::cout << "Msg hash=" << h << std::endl;
+                    boost::to_upper(h);
+                    std::cout << "Msg hash=" << h << std::endl;
+                    std::string dec = conv.Convert(h);
+                    std::cout << "Msg decimal hash=" << dec << std::endl;
+                    this->M = typename fr_value_type::integral_type(dec);
+
+                    print_field_element(this->M);
+                    std::cout << std::endl;
+                }
+            };
+
             template<typename CurveType>
             struct pixel_public_key_type{
                 using curve_type = CurveType;
                 using g1_type = typename curve_type::template g1_type<>;
                 using g2_type = typename curve_type::template g2_type<>;
+                using gt_type = typename curve_type::gt_type;
 
                 using g1_value_type = typename g1_type::value_type;
                 using g2_value_type = typename g2_type::value_type;
+                using gt_value_type = typename gt_type::value_type;
 
                 g2_value_type y;
+                gt_value_type hy;   //precomputed e(h,y)
             };
 
             template<typename CurveType>
@@ -164,7 +171,7 @@ namespace nil {
                 }
 
                 static g1_value_type F(int t){ //function F(t, 0){
-                    return random_element<typename curve_type::template g1_type<>>();
+                    return static_params::g1;
                 }
             };
 
@@ -185,7 +192,9 @@ namespace nil {
                 template <class, class> typename SchemeParams, 
                 template <class> typename StaticParams,
                 template <class> typename SignatureType,
-                template <class> typename KeyPairType
+                template <class> typename KeyPairType,
+                template <class, class> typename MsgType,
+                typename HashType
             >
             struct pixel_basic_scheme {
                 using scheme_params = SchemeParams<CurveType, StaticParams<CurveType>>;
@@ -199,13 +208,15 @@ namespace nil {
 
                 using g1_type = typename curve_type::template g1_type<>;
                 using g2_type = typename curve_type::template g2_type<>;
+                using gt_type = typename curve_type::gt_type;
                 using fr_type = typename curve_type::scalar_field_type;
 
                 using g1_value_type = typename g1_type::value_type;
                 using g2_value_type = typename g2_type::value_type;
+                using gt_value_type = typename gt_type::value_type;
                 using fr_value_type = typename fr_type::value_type;
 
-                typedef std::string MsgType;
+                using msg_type = MsgType<CurveType, HashType>;
 
                 static inline void setup(){ scheme_params::load(); }
                 static inline keypair_type generate_keys(){
@@ -217,11 +228,12 @@ namespace nil {
                     pair.sk =           new private_key_type();
                     pair.sk->hx =       x * static_params::h;
                     pair.sk->t =        1;
-                    pair.sk->hxft0r =   pair.sk->hx + (r * scheme_params::F(pair.sk->t));   // (h^x)*F(t, 0)^r
-                    pair.sk->F1r =      r * static_params::F1;      // F'^r
-                    pair.sk->g2r =      r*static_params::g2;      // g2^r
+                    pair.sk->hxFt0r =   pair.sk->hx + (r * scheme_params::F(pair.sk->t));       // (h^x)*F(t, 0)^r
+                    pair.sk->F1r =      r * static_params::F1;                                  // F'^r
+                    pair.sk->g2r =      r*static_params::g2;                                    // g2^r
 
-                    pair.pk.y =           pair.sk->x * static_params::g2;
+                    pair.pk.y =         x * static_params::g2;                                  // g2^x
+                    pair.pk.hy =        pair_reduced<curve_type>(static_params::h,pair.pk.y);   //e(h,y)
 
                     return pair;
                 }
@@ -244,28 +256,24 @@ namespace nil {
                     return sk;
                 }
 
-                static inline signature_type sign( MsgType& msg, private_key_type *sk){
+                static inline signature_type sign( msg_type &msg, private_key_type *sk){
                     //We can use private key only once
                     assert(!sk->used());
                     sk->use();
 
-//                    fr_value_type M = field_element_init(msg);
-                    BaseConverter conv = BaseConverter::HexToDecimalConverter();
-
-                    std::cout << "Msg hash=" << msg << std::endl;
-                    boost::to_upper(msg);
-                    std::cout << "Msg hash=" << msg << std::endl;
-                    std::string dec = conv.Convert(msg);
-                    std::cout << "Msg decimal hash=" << dec << std::endl;
-                    fr_value_type M = typename fr_value_type::integral_type(dec);
-
-                    print_field_element(M);
-                    std::cout << std::endl;
-                    
-                    return signature_type(sk->hxFt0r + M * sk->F1r, static_params::g2r);   
+                    return signature_type(sk->hxFt0r + msg.M * sk->F1r, sk->g2r);   
                 }
 
-                static inline bool verify( MsgType& msg, const public_key_type &pubkey, const signature_type &sig){
+                static inline bool verify( msg_type& msg, const public_key_type &pk, int t, const signature_type &sig){
+                    gt_value_type pairing1 = pair_reduced<curve_type>(sig.sigma1, static_params::g2);
+                    gt_value_type pairing2 = pk.hy * pair_reduced<curve_type>(scheme_params::F(t) + msg.M * static_params::F1, sig.sigma2);
+
+                    std::cout<<"e(sigma1,g2)"<<std::endl;
+                    print_field_element(pairing1);
+                    std::cout<<std::endl;
+                    std::cout<<std::endl;
+                    std::cout<<"e(h,y)*e(F(T)*F'^M)"<<std::endl;
+                    print_field_element(pairing2);
                     return true;   
                 }
 

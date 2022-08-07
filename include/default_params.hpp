@@ -35,10 +35,11 @@ struct pixel_basic_default_params{
     using g1_value_type = typename g1_type::value_type;
     using g2_value_type = typename g2_type::value_type;
 
-    static g1_value_type g1;
-    static g2_value_type g2;
-    static g1_value_type h;
-    static g1_value_type F1;
+    static g1_value_type    g1;
+    static g2_value_type    g2;
+    static g1_value_type    h;
+    static g1_value_type    F1;
+    static int              T;
 
     static std::string params_path;
     static std::string curve_name;
@@ -60,5 +61,6 @@ template <typename CurveType>typename pixel_basic_default_params<CurveType>::g1_
 template <typename CurveType>typename pixel_basic_default_params<CurveType>::g2_value_type pixel_basic_default_params<CurveType>::g2;
 template <typename CurveType>typename pixel_basic_default_params<CurveType>::g1_value_type pixel_basic_default_params<CurveType>::h;
 template <typename CurveType>typename pixel_basic_default_params<CurveType>::g1_value_type pixel_basic_default_params<CurveType>::F1;
+template <typename CurveType>int pixel_basic_default_params<CurveType>::T = 8;
 template <typename CurveType>std::string pixel_basic_default_params<CurveType>::params_path = "../data/default_params.json";
 template <typename CurveType>std::string pixel_basic_default_params<CurveType>::curve_name;

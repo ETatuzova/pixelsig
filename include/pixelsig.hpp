@@ -16,6 +16,8 @@
 #include <nil/crypto3/pubkey/algorithm/aggregate.hpp>
 #include <nil/crypto3/pubkey/algorithm/aggregate_verify.hpp>
 #include <nil/crypto3/pubkey/algorithm/aggregate_verify_single_msg.hpp>
+#include <nil/crypto3/pubkey/keys/private_key.hpp>
+#include <nil/crypto3/pubkey/keys/public_key.hpp>
 
 #include <nil/crypto3/algebra/curves/bls12.hpp>
 #include <curve_point_print.hpp>
@@ -37,42 +39,114 @@ namespace nil {
                 typedef SignatureVersion signature_version;
 
                 typedef typename SignatureVersion::private_key_type private_key_type;
-                typedef typename SignatureVersion::public_key_type public_key_type;
-                typedef typename SignatureVersion::signature_type internal_signature_type;
-                typedef typename SignatureVersion::MsgType internal_msg_type;
+                typedef typename SignatureVersion::public_key_type  public_key_type;
+                typedef typename SignatureVersion::keypair_type     keypair_type;
+                typedef typename SignatureVersion::signature_type   internal_signature_type;
+                typedef typename SignatureVersion::MsgType          internal_msg_type;
 
                 using SigType = std::string;
+
+                signature_version   scheme_impl;
 
                 static inline void setup(){
                     signature_version::setup();
                 }
-                static inline void generate_keys(){}
-                static inline void update_keys(){}
-                static inline SigType sign( MsgType& msg, const private_key_type &privkey){
+                static inline keypair_type generate_keys(){
+                    return signature_version::generate_keys();
+                }
+                static inline private_key_type *update_keys(private_key_type* key){
+                    return signature_version::update_keys(key);
+                }
+                static inline SigType sign( MsgType& msg, private_key_type *privkey){
                     internal_msg_type hmsg = (internal_msg_type)hash<hash_type>(msg);
                     return (std::string)(SignatureVersion::sign(hmsg, privkey));   
                 }
-                static inline bool verify( MsgType& msg, const public_key_type &pubkey, const SigType &sig){
-                    return SignatureVersion::verify(msg, pubkey, (internal_signature_type)sig);   
+                static inline bool verify( MsgType& msg, const public_key_type &pubkey, int t, const SigType &sig){
+                    return SignatureVersion::verify(msg, pubkey, t, (internal_signature_type)sig);   
                 }
             };
 
             template<typename CurveType> 
             struct pixel_signature_type{
                 using curve_type = CurveType;
-                using gt_type = typename curve_type::gt_type;
-                using gt_value_type = typename curve_type::gt_type::value_type;
+                using g1_type = typename curve_type::template g1_type<>;
+                using g2_type = typename curve_type::template g2_type<>;
 
-                gt_value_type val;
+                using g1_value_type = typename g1_type::value_type;
+                using g2_value_type = typename g2_type::value_type;
 
-                pixel_signature_type<curve_type>(gt_value_type sign){
-                    this->val = sign;
+                g1_value_type sigma1;
+                g2_value_type sigma2;
+
+                pixel_signature_type<curve_type>(g1_value_type sigma1, g2_value_type sigma2){
+                    this->sigma1 = sigma1;
+                    this->sigma2 = sigma2;
                 }
                 operator std::string(){
-                    std::cout<< "Signature_value::" << std::endl;
-                    print_field_element(this->val);
-                    std::cout<<stringify_field_element(this->val)<<std::endl;
-                    return "stringify_curve_group_element<gt_value_type>(this->val)";
+                    std::string  str1=stringify_curve_group_element(this->sigma1);
+                    std::string  str2=stringify_curve_group_element(this->sigma2);
+                    std::string  result = "[" + str1 + "," + str2 + "]";
+                    return result;
+                }
+            };
+
+            /*!
+             * @brief Pixel private key type
+             * @tparam field_type -- SignatureVersion -- one of implementation classes
+             * This object can be used only once;
+             * sign() function works only if used() is false. 
+             * It sets used=true by use() method
+             * Key should be deleted after update_keys() function call;
+             * @see https://eprint.iacr.org/2019/514.pdf
+             */
+            template<typename CurveType>
+            struct pixel_private_key_type{
+                using curve_type = CurveType;
+                using g1_type = typename curve_type::template g1_type<>;
+                using g2_type = typename curve_type::template g2_type<>;
+
+                using g1_value_type = typename g1_type::value_type;
+                using g2_value_type = typename g2_type::value_type;
+
+                using fr_type = typename curve_type::scalar_field_type;
+                using fr_value_type = typename fr_type::value_type;
+
+                fr_value_type x;        //core of secret key
+
+                // parts of private key
+                g1_value_type hxft0r;   // (h^x)*F(t, 0)^r
+                g1_value_type F1r;      // F'^r
+                g2_value_type g2r;      // g2^r
+                int   t;
+
+                void use(){ this->u = true; }
+                bool used(){ return this->u; }
+                private:
+                    bool u = false;
+            };
+
+            template<typename CurveType>
+            struct pixel_public_key_type{
+                using curve_type = CurveType;
+                using g1_type = typename curve_type::template g1_type<>;
+                using g2_type = typename curve_type::template g2_type<>;
+
+                using g1_value_type = typename g1_type::value_type;
+                using g2_value_type = typename g2_type::value_type;
+
+                g2_value_type y;
+            };
+
+            template<typename CurveType>
+            struct pixel_keypair_type{
+                using private_key_type = pixel_private_key_type<CurveType>;
+                using public_key_type = pixel_public_key_type<CurveType>;
+
+                private_key_type *sk;
+                public_key_type  pk;
+
+                ~pixel_keypair_type(){
+                    if(this->sk != NULL) delete[](sk);
                 }
             };
 
@@ -109,25 +183,71 @@ namespace nil {
                 typename CurveType, 
                 template <class, class> typename SchemeParams, 
                 template <class> typename StaticParams,
-                template <class> typename SignatureType
+                template <class> typename SignatureType,
+                template <class> typename KeyPairType
             >
             struct pixel_basic_scheme {
-                typedef void* public_key_type;
-                typedef void* private_key_type;
                 using scheme_params = SchemeParams<CurveType, StaticParams<CurveType>>;
                 using static_params = StaticParams<CurveType>;
                 using curve_type = CurveType;
+
                 using signature_type = SignatureType<CurveType>;
+                using keypair_type = KeyPairType<CurveType>;
+                using private_key_type = typename keypair_type::private_key_type;
+                using public_key_type  = typename keypair_type::public_key_type;
+
+                using g1_type = typename curve_type::template g1_type<>;
+                using g2_type = typename curve_type::template g2_type<>;
+                using fr_type = typename curve_type::scalar_field_type;
+
+                using g1_value_type = typename g1_type::value_type;
+                using g2_value_type = typename g2_type::value_type;
+                using fr_value_type = typename fr_type::value_type;
 
                 typedef std::string MsgType;
 
                 static inline void setup(){ scheme_params::load(); }
-                static inline void generate_keys(){}
-                static inline void update_keys(){}
-                static inline signature_type sign( MsgType& msg, const private_key_type &privkey){
-                    typename curve_type::gt_type::value_type gt = pair_reduced<curve_type>(static_params::g1, static_params::g2);
-                    print_field_element(gt);
-                    return signature_type(gt);   
+                static inline keypair_type generate_keys(){
+                    fr_value_type r =    random_element<fr_type>(); // fresh randomness
+
+                    keypair_type    pair;
+
+                    pair.sk =           new private_key_type();
+                    pair.sk->x =        random_element<fr_type>();
+                    pair.sk->t =        1;
+                    pair.sk->hxft0r =   (pair.sk->x * static_params::h) + (r * scheme_params::F(pair.sk->t));   // (h^x)*F(t, 0)^r
+                    pair.sk->F1r =      r * static_params::F1;      // F'^r
+                    pair.sk->g2r =      r*static_params::g2;      // g2^r
+
+                    pair.pk.y =           pair.sk->x * static_params::g2;
+
+                    return pair;
+                }
+
+                static inline private_key_type * update_keys(private_key_type *old_sk){
+                    if( old_sk->t == static_params::T ){
+                        // keypair should be regenerated by generate_keys() function;
+                        delete old_sk;
+                        return NULL;
+                    }
+                    private_key_type *sk = new private_key_type;
+                    fr_value_type r =    random_element<fr_type>(); // fresh randomness
+
+                    sk->x = old_sk->x;
+                    sk->t = old_sk->t + 1;
+                    sk->hxft0r =   (sk->x * static_params::h) + (r * scheme_params::F(sk->t));   // (h^x)*F(t, 0)^r
+                    sk->F1r =      r * static_params::F1;      // F'^r
+                    sk->g2r =      r*static_params::g2;      // g2^r
+                    
+                    return sk;
+                }
+
+                static inline signature_type sign( MsgType& msg, private_key_type *privkey){
+                    //We can use private key only once
+                    assert(!privkey->used());
+                    privkey->use();
+
+                    return signature_type(static_params::g1, static_params::g2);   
                 }
                 static inline bool verify( MsgType& msg, const public_key_type &pubkey, const signature_type &sig){
                     return true;   
@@ -158,7 +278,7 @@ namespace nil {
                 static inline signature_type sign( MsgType& msg, const private_key_type &privkey){
                     return msg + ": encoding times pixel signature";   
                 }
-                static inline bool verify( MsgType& msg, const public_key_type &pubkey, const signature_type &sig){
+                static inline bool verify( MsgType& msg, const public_key_type &pubkey, int t, const signature_type &sig){
                     return false;   
                 }
 

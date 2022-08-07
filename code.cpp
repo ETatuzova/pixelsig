@@ -22,7 +22,7 @@
 #include <random>
 
 #include <pixelsig.hpp>
-#include <random_params.hpp>
+//#include <random_params.hpp>
 #include <default_params.hpp>
 
 using namespace nil::crypto3;
@@ -33,17 +33,27 @@ using namespace nil::crypto3::multiprecision;
 using namespace nil::crypto3::algebra::pairing;
 
 typedef std::string signature_type;
+typedef pixel_parent_scheme<
+    pixel_basic_scheme<
+        curves::bls12<381>, 
+        pixel_basic_params,
+        pixel_basic_default_params,
+        pixel_signature_type,
+        pixel_keypair_type
+    >, 
+    std::string, hashes::sha
+> BasicBlsScheme;
 
 int main(int argc, char *argv[]) {
-    pixel_parent_scheme<
-        pixel_basic_scheme<
-            curves::bls12<381>, 
-            pixel_basic_params,
-            pixel_basic_default_params,
-            pixel_signature_type
-        >, 
-        std::string, hashes::sha
-    > basic_sig_scheme;
+    pixel_basic_default_params<curves::bls12<381>>::curve_name="bls12";
+    BasicBlsScheme::setup();
+    BasicBlsScheme::keypair_type keypair = BasicBlsScheme::generate_keys();
+    std::string input = "It is Sunday";
+
+    BasicBlsScheme::sign(input, keypair.sk);
+//    BasicBlsScheme::sign(input, keypair.sk); // This should call assertion;
+    keypair.sk = BasicBlsScheme::update_keys(keypair.sk);
+    BasicBlsScheme::sign(input, keypair.sk);
 
 /*    pixel_parent_scheme<
         pixel_basic_scheme<
@@ -53,21 +63,20 @@ int main(int argc, char *argv[]) {
             pixel_signature_type
         >, 
         std::string, hashes::sha
-    > basic_sig_scheme2;*/
+    > basic_sig_scheme2;
 
 //    pixel_parent_scheme<pixel_et_scheme<curves::mnt4<298>>,std::string, hashes::sha1> et_sig_scheme;
 
-    std::string input = "Tuesday was great";
+    std::string input = "Tuesday was great";*/
 
-    pixel_basic_default_params<curves::bls12<381>>::curve_name="bls12";
-    basic_sig_scheme.setup();
-    std::cout<< stringify_curve_group_element(pixel_basic_default_params<curves::bls12<381>>::g2)<<std::endl;
+//    pixel_basic_default_params<curves::bls12<381>>::curve_name="bls12";
+//    basic_sig_scheme.setup();
 
 /*    pixel_basic_default_params<curves::mnt6<298>>::curve_name="mnt6";
     basic_sig_scheme2.setup();
     std::cout<< stringify_curve_group_element(pixel_basic_default_params<curves::mnt6<298>>::g2)<<std::endl;*/
 
-    auto s = basic_sig_scheme.sign(input, NULL);
+//    auto s = basic_sig_scheme.sign(input, NULL);
 //    auto s2 = et_sig_scheme.sign(input, NULL);
 
 //    std::cout << "My first signature= " << s << std::endl;

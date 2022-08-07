@@ -1,3 +1,5 @@
+#ifndef __BASE_CONVERTER_H__
+#define __BASE_CONVERTER_H__
 // Arbitrary precision base conversion by Daniel Gehriger <gehriger@linkcad.com>   
 
 #include <string>
@@ -99,3 +101,5 @@ private:
     std::string         sourceBaseSet_;
     std::string         targetBaseSet_;
 };
+
+#endif

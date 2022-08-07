@@ -48,6 +48,11 @@ std::string stringify_params(){
 
 int main(int argc, char *argv[]) {
     std::stringstream ss;
+
+    bls12params::load();
+    mnt4params::load();
+    mnt6params::load();
+    
     ss  << "{\"basic\":"
         << "{\"bls12\":" << stringify_params<bls12params>()
         << ",\"mnt4\":" << stringify_params<mnt4params>()

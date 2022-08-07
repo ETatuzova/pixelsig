@@ -10,24 +10,11 @@
 #include <nil/crypto3/algebra/algorithms/pair.hpp>
 #include <nil/crypto3/algebra/random_element.hpp>
 
-#include <nil/crypto3/pubkey/algorithm/pubkey.hpp>
-#include <nil/crypto3/pubkey/algorithm/sign.hpp>
-#include <nil/crypto3/pubkey/algorithm/verify.hpp>
-#include <nil/crypto3/pubkey/algorithm/aggregate.hpp>
-#include <nil/crypto3/pubkey/algorithm/aggregate_verify.hpp>
-#include <nil/crypto3/pubkey/algorithm/aggregate_verify_single_msg.hpp>
-#include <nil/crypto3/pubkey/keys/private_key.hpp>
-#include <nil/crypto3/pubkey/keys/public_key.hpp>
-
 #include <curve_point_print.hpp>
 #include <curve_point_decode.hpp>
 #include <curve_point_encode.hpp>
 #include <base_converter.h>
 #include <boost/algorithm/string.hpp>
-#include <pixel_signature_type.hpp>
-#include <pixel_msg_type.hpp>
-#include <pixel_key_type.hpp>
-#include <pixel_params_type.hpp>
 
 #include <vector>
 
@@ -192,6 +179,7 @@ namespace nil {
 */
                     return pairing1 == pairing2;   
                 }
+
                 static inline public_key_type aggregate_public_keys(std::vector<public_key_type> &pks){
                     public_key_type apk;
                     apk = pks[0];

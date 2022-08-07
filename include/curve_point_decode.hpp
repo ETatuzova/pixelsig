@@ -1,6 +1,15 @@
 #ifndef CURVE_POINT_DECODE
 #define CURVE_POINT_DECODE
 
+#include <nil/crypto3/algebra/algorithms/pair.hpp>
+#include <nil/crypto3/algebra/type_traits.hpp>
+#include <nil/crypto3/multiprecision/cpp_int.hpp>
+
+using namespace nil::crypto3;
+using namespace nil::crypto3::algebra;
+using namespace nil::crypto3::algebra::pairing;
+using namespace nil::crypto3::algebra::fields;
+
 template<typename ElementType>
 struct field_element_init;
 

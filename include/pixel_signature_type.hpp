@@ -1,17 +1,12 @@
-#include <nil/crypto3/algebra/curves/bls12.hpp>
-#include <nil/crypto3/algebra/curves/mnt4.hpp>
-#include <nil/crypto3/algebra/curves/mnt6.hpp>
-#include <nil/crypto3/algebra/curves/edwards.hpp>
-#include <nil/crypto3/algebra/pairing/bls12.hpp>
-#include <nil/crypto3/algebra/pairing/mnt4.hpp>
-#include <nil/crypto3/algebra/pairing/mnt6.hpp>
-#include <nil/crypto3/algebra/pairing/edwards.hpp>
-
-#include <nil/crypto3/algebra/algorithms/pair.hpp>
+#include <curve_point_decode.hpp>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/iostreams/stream.hpp>
+
+using namespace nil::crypto3;
+using namespace nil::crypto3::algebra;
+using namespace nil::crypto3::algebra::pairing;
 
 template<typename CurveType> 
 struct pixel_signature_type{

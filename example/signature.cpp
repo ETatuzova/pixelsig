@@ -21,6 +21,11 @@
 #include <utility>
 #include <random>
 
+#include <curve_point_encode.hpp>
+#include <pixel_params_type.hpp>
+#include <pixel_msg_type.hpp>
+#include <pixel_signature_type.hpp>
+#include <pixel_key_type.hpp>
 #include <pixel_signature_scheme.hpp>
 #include <default_params.hpp>
 //#include <random_params.hpp>

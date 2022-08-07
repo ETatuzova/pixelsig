@@ -25,6 +25,9 @@
 #include <base_converter.h>
 #include <boost/algorithm/string.hpp>
 #include <pixel_signature_type.hpp>
+#include <pixel_msg_type.hpp>
+#include <pixel_key_type.hpp>
+#include <pixel_params_type.hpp>
 
 using namespace nil::crypto3::algebra;
 
@@ -68,110 +71,6 @@ namespace nil {
                     internal_msg_type m(msg);
                     internal_signature_type s(sig);
                     return SignatureVersion::verify(m, pubkey, t, s);   
-                }
-            };
-
-            /*!
-             * @brief Pixel private key type
-             * @tparam field_type -- SignatureVersion -- one of implementation classes
-             * This object can be used only once;
-             * sign() function works only if used() is false. 
-             * It sets used=true by use() method
-             * Key should be deleted after update_keys() function call;
-             * @see https://eprint.iacr.org/2019/514.pdf
-             */
-            template<typename CurveType>
-            struct pixel_private_key_type{
-                using curve_type = CurveType;
-                using g1_type = typename curve_type::template g1_type<>;
-                using g2_type = typename curve_type::template g2_type<>;
-
-                using g1_value_type = typename g1_type::value_type;
-                using g2_value_type = typename g2_type::value_type;
-
-                using fr_type = typename curve_type::scalar_field_type;
-                using fr_value_type = typename fr_type::value_type;
-
-                // parts of private key
-                g1_value_type hx;       // h^x --computed once
-                g1_value_type hxFt0r;   // (h^x)*F(t, 0)^r
-                g1_value_type F1r;      // F'^r
-                g2_value_type g2r;      // g2^r
-                int   t;
-
-                void use(){ this->u = true; }
-                bool used(){ return this->u; }
-                private:
-                    bool u = false;
-            };
-
-            template<typename CurveType, typename HashType>
-            struct pixel_msg_type{
-                using curve_type =      CurveType;
-                using fr_type =         typename curve_type::scalar_field_type;
-                using fr_value_type =   typename fr_type::value_type;
-
-                fr_value_type           M;
-
-                pixel_msg_type<CurveType, HashType>(std::string msg){
-                    std::string h = hash<HashType>(msg);
-
-                    BaseConverter conv = BaseConverter::HexToDecimalConverter();
-
-                    std::cout << "Msg hash=" << h << std::endl;
-                    boost::to_upper(h);
-                    std::cout << "Msg hash=" << h << std::endl;
-                    std::string dec = conv.Convert(h);
-                    std::cout << "Msg decimal hash=" << dec << std::endl;
-                    this->M = typename fr_value_type::integral_type(dec);
-
-                    print_field_element(this->M);
-                    std::cout << std::endl;
-                }
-            };
-
-            template<typename CurveType>
-            struct pixel_public_key_type{
-                using curve_type = CurveType;
-                using g1_type = typename curve_type::template g1_type<>;
-                using g2_type = typename curve_type::template g2_type<>;
-                using gt_type = typename curve_type::gt_type;
-
-                using g1_value_type = typename g1_type::value_type;
-                using g2_value_type = typename g2_type::value_type;
-                using gt_value_type = typename gt_type::value_type;
-
-                g2_value_type y;
-                gt_value_type hy;   //precomputed e(h,y)
-            };
-
-            template<typename CurveType>
-            struct pixel_keypair_type{
-                using private_key_type = pixel_private_key_type<CurveType>;
-                using public_key_type = pixel_public_key_type<CurveType>;
-
-                private_key_type *sk;
-                public_key_type  pk;
-
-                ~pixel_keypair_type(){
-                    if(this->sk != NULL) delete[](sk);
-                }
-            };
-
-            template<typename CurveType, typename StaticParams>
-            struct pixel_basic_params{
-                using curve_type = CurveType;
-                using static_params = StaticParams;
-
-                using g1_type = typename curve_type::template g1_type<>;
-                using g1_value_type = typename g1_type::value_type;
-
-                static void load(){
-                    static_params::load();
-                }
-
-                static g1_value_type F(int t){ //function F(t, 0){
-                    return static_params::g1;
                 }
             };
 

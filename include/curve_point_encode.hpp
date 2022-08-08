@@ -1,5 +1,5 @@
-#ifndef __CURVE_GROUP_ENCODE_HPP__
-#define __CURVE_GROUP_ENCODE_HPP__
+#ifndef __CURVE_POINT_ENCODE_HPP__
+#define __CURVE_POINT_ENCODE_HPP__
 
 #include <nil/crypto3/algebra/algorithms/pair.hpp>
 #include <nil/crypto3/algebra/type_traits.hpp>

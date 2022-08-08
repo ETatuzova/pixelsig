@@ -32,10 +32,10 @@
 
 using namespace nil::crypto3;
 using namespace nil::crypto3::algebra;
-using namespace nil::crypto3::pubkey;
 using namespace nil::crypto3::hashes;
 using namespace nil::crypto3::multiprecision;
 using namespace nil::crypto3::algebra::pairing;
+using namespace nil::crypto3::pixel;
 
 typedef std::string signature_type;
 typedef pixel_parent_scheme<
@@ -102,5 +102,19 @@ int main(int argc, char *argv[]) {
     } else {
         std::cout << "Multi-signature is wrong" << std::endl;
     };
+
+    if( BasicBlsScheme::verify_public_key(kp1.pk) ){
+        std::cout << "This key is valid individual key" << std::endl;
+    }
+    else {
+        std::cout << "This key is not valid individual key" << std::endl;
+    }
+
+    if( BasicBlsScheme::verify_public_key(apk) ){
+        std::cout << "This key is valid individual key" << std::endl;
+    }
+    else {
+        std::cout << "This key is not valid individual key" << std::endl;
+    }
     return 0;
 }

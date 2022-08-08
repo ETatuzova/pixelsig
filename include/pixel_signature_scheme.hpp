@@ -10,19 +10,26 @@
 #include <nil/crypto3/algebra/algorithms/pair.hpp>
 #include <nil/crypto3/algebra/random_element.hpp>
 
+#include <nil/crypto3/hash/md5.hpp>
+#include <nil/crypto3/hash/sha1.hpp>
+#include <nil/crypto3/hash/sha.hpp>
+#include <nil/crypto3/hash/algorithm/hash.hpp>
+
 #include <curve_point_print.hpp>
 #include <curve_point_decode.hpp>
 #include <curve_point_encode.hpp>
 #include <base_converter.h>
+#include <util.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include <vector>
 
+using namespace nil::crypto3::hashes;
 using namespace nil::crypto3::algebra;
 
 namespace nil {
     namespace crypto3 {
-        namespace pubkey {
+        namespace pixel {
             /*!
              * @brief Parent class for pixel signature scheme
              * @tparam field_type -- SignatureVersion -- one of implementation classes
@@ -74,6 +81,9 @@ namespace nil {
                 }
                 static inline internal_signature_type aggregate_signatures(std::vector<internal_signature_type> &signs){
                     return SignatureVersion::aggregate_signatures(signs);
+                }
+                static inline bool verify_public_key(public_key_type pk){
+                    return SignatureVersion::verify_public_key(pk);
                 }
             };
 
@@ -137,6 +147,8 @@ namespace nil {
                     pair.pk.y =         x * static_params::g2;                                  // g2^x
                     pair.pk.hy =        pair_reduced<curve_type>(static_params::h,pair.pk.y);   //e(h,y)
 
+                    pair.pk.proof =     x * H2G1(pair.pk.y);
+
                     return pair;
                 }
 
@@ -170,13 +182,6 @@ namespace nil {
                     gt_value_type pairing1 = pair_reduced<curve_type>(sig.sigma1, static_params::g2);
                     gt_value_type pairing2 = pk.hy * pair_reduced<curve_type>(scheme_params::F(t) + msg.M * static_params::F1, sig.sigma2);
 
-/*                  std::cout<<"e(sigma1,g2)"<<std::endl;
-                    print_field_element(pairing1);
-                    std::cout<<std::endl;
-                    std::cout<<std::endl;
-                    std::cout<<"e(h,y)*e(F(T)*F'^M)"<<std::endl;
-                    print_field_element(pairing2);
-*/
                     return pairing1 == pairing2;   
                 }
 
@@ -201,37 +206,19 @@ namespace nil {
 
                     return Sigma;
                 }
+
+                static inline bool verify_public_key(public_key_type pk){
+                    auto val1 = pair_reduced<curve_type>(pk.proof, static_params::g2);
+                    auto val2 = pair_reduced<curve_type>(H2G1(pk.y), pk.y);
+                    return (val1 == val2);
+                }
+            private:
+                static inline g1_value_type H2G1(g2_value_type y){
+                    auto h = hash<HashType>("VERIFICATION_PREFIX_"+stringify_curve_group_element(y));
+                    auto frh = hash2fr<curve_type>(h);
+                    return frh * static_params::g1;
+                }
             };
-
-            /*!
-             * @brief Encoding time Pixel Scheme
-             * @tparam field_type -- type of prime order field G1 that we will use
-             * @tparam hash_type -- hash function we will use
-             * @tparam hash_type -- class of messages
-             * @see https://eprint.iacr.org/2019/514.pdf     Section 4.1
-             */
-/*            template<typename CurveType>
-            struct pixel_et_scheme {
-                typedef void* public_key_type;
-                typedef void* private_key_type;
-                typedef std::string signature_type;
-                typedef std::string MsgType;
-
-                static inline void setup(){}
-                static inline void generate_keys(){}
-                static inline void update_keys(){}
-                static inline signature_type sign( MsgType& msg, const private_key_type &privkey){
-
-                    return msg + ": encoding times pixel signature";   
-                }
-                static inline bool verify( MsgType& msg, const public_key_type &pubkey, int t, const signature_type &sig){
-                    return false;   
-                }
-
-                private:
-                    public_key_type  public_key;
-                    private_key_type private_key; 
-            };*/
-       }
+        }
     }
 }

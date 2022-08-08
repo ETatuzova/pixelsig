@@ -33,6 +33,7 @@ struct pixel_basic_random_params{
     static g2_value_type g2; // generator of G2
     static g1_value_type h;  // constant h
     static g1_value_type F1; // constant F1
+    static std::string   curve_name;
 
     static void load(){
         g1 = random_element<typename CurveType::template g1_type<>>();
@@ -43,6 +44,7 @@ struct pixel_basic_random_params{
 };
 
 template<typename CurveType> int pixel_basic_random_params<CurveType>::T = 8;
+template<typename CurveType> std::string pixel_basic_random_params<CurveType>::curve_name;
 template<typename CurveType> 
     typename pixel_basic_random_params<CurveType>::g1_value_type pixel_basic_random_params<CurveType>::g1;
 template<typename CurveType> 

@@ -28,7 +28,7 @@
 #include <pixel_key_type.hpp>
 #include <pixel_signature_scheme.hpp>
 #include <default_params.hpp>
-//#include <random_params.hpp>
+#include <random_params.hpp>
 
 using namespace nil::crypto3;
 using namespace nil::crypto3::algebra;
@@ -37,7 +37,6 @@ using namespace nil::crypto3::multiprecision;
 using namespace nil::crypto3::algebra::pairing;
 using namespace nil::crypto3::pixel;
 
-typedef std::string signature_type;
 typedef pixel_parent_scheme<
     pixel_basic_scheme<
         curves::bls12<381>, 
@@ -56,7 +55,7 @@ int main(int argc, char *argv[]) {
     pixel_basic_default_params<curves::bls12<381>>::curve_name="bls12";
     BasicBlsScheme::setup();
     BasicBlsScheme::keypair_type keypair = BasicBlsScheme::generate_keys();
-    std::string input = "It is Sunday";
+    std::string input = "Hello, world!";
 
     std::string wrong = BasicBlsScheme::sign(input, keypair.sk);
 //    BasicBlsScheme::sign(input, keypair.sk); // This should call assertion;

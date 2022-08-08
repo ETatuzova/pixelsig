@@ -1,0 +1,20 @@
+How to build project?
+1. clone crypto3 repository in the same folder as pixelsig.
+2. cd pixelsig
+   mkdir build
+   cd build
+   cmake ..
+   cmake --build .
+
+Project targets
+
+example         -- small example of signature usage
+
+test            -- test signature for different curves, hash functions and scheme params.
+                    ./test --log_level=message
+
+bilinearity     -- minimalistic biliniarity example for crypto3 library
+
+genparams       -- generate scheme params in json format. Default params are in data/default_params.json file.
+                   if you want regenerate json params, you should execute from build folder: 
+                    ./genparams>../data/default_params.json
